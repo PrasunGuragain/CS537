@@ -1,0 +1,6 @@
+{
+    "git.terminalAuthentication": false,
+    "files.associations": {
+        "itoa_ljust.h": "c"
+    }
+}

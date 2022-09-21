@@ -16,18 +16,29 @@
 #include "file.h"
 #include "fcntl.h"
 
-int trace;
-char *curr_path;
+int trace_enabled;
+char *trace_pathname;
+int count;
 
+int
+strcmp(const char *p, const char *q)
+{
+  while(*p && *p == *q)
+    p++, q++;
+  return (uchar)*p - (uchar)*q;
+}
 
 // records the pathname specified by the pathname, into some known location
 int
 sys_trace(void)
 {
-    char *path;
-    if(argstr(0, &path) < 0){
+    if(argstr(0, &trace_pathname) < 0){
         return -1;
     }
+
+    trace_enabled = 1;
+    count = 0;
+    //begin_op(); // tells system to start the system and how many process running at the same time
 
     return 0;
 }
@@ -36,7 +47,10 @@ sys_trace(void)
 int
 sys_getcount(void)
 {
-    return 0;
+    if (trace_enabled == 0){
+        return 0;
+    }
+    return count;
 }
 
 // Fetch the nth word-sized system call argument as a file descriptor
@@ -315,6 +329,10 @@ sys_open(void)
 
   if(argstr(0, &path) < 0 || argint(1, &omode) < 0)
     return -1;
+
+  if (strcmp(path, trace_pathname) == 0 && trace_enabled){
+    count += 1;
+  }
 
   begin_op();
 

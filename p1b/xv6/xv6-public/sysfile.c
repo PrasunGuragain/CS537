@@ -16,6 +16,29 @@
 #include "file.h"
 #include "fcntl.h"
 
+int trace;
+char *curr_path;
+
+
+// records the pathname specified by the pathname, into some known location
+int
+sys_trace(void)
+{
+    char *path;
+    if(argstr(0, &path) < 0){
+        return -1;
+    }
+
+    return 0;
+}
+
+// returns the value of a counter
+int
+sys_getcount(void)
+{
+    return 0;
+}
+
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
 static int

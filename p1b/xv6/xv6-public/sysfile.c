@@ -17,7 +17,7 @@
 #include "fcntl.h"
 
 int trace_enabled;
-char *trace_pathname;
+char trace_pathname[257];
 int count;
 
 int
@@ -32,13 +32,18 @@ strcmp(const char *p, const char *q)
 int
 sys_trace(void)
 {
-    if(argstr(0, &trace_pathname) < 0){
+    char *path;
+    if(argstr(0, &path) < 0){
         return -1;
     }
 
+    for(int i = 0; i < strlen(path); i++){
+        trace_pathname[i] = path[i];
+    }
+    //strcpy(path, trace_pathname);
+
     trace_enabled = 1;
     count = 0;
-    //begin_op(); // tells system to start the system and how many process running at the same time
 
     return 0;
 }

@@ -46,14 +46,23 @@ void prompt(){
     printf("wish> ");
 }
 
+void cd_command(){
+
+}
+
 int main(){
     char cmd[100], command[100], *parameters[20];
 
     while(1){
         prompt(); // display prompt on screen
         read_command(command, parameters); // read input from terminal
-        if(fork()!=0){
+        if (strcmp(command, "exit") == 0){
+            exit(0);
+        }
+        int pid = fork();
+        if(pid!=0){
             wait(NULL);
+            // if problems, look at wait_pid(), and wif_signal()
         }
         else{
             strcpy(cmd, "/bin/");
@@ -63,9 +72,6 @@ int main(){
                 write(STDERR_FILENO, error_message, strlen(error_message)); 
                 exit(0);
             }
-        }
-        if (strcmp(command, "exit")==0){
-            break;
         }
     }
     return 0;

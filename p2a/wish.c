@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+// reads user input
 int read_command(char cmd[], char *par[]){
     char *array[100], *commandList;
 
@@ -12,10 +13,10 @@ int read_command(char cmd[], char *par[]){
     size_t bufsize = 0;
     getline(&command, &bufsize, stdin);
 
-    commandList = strtok(command, " \n");
+    commandList = strtok(command, " \n"); // remove end line \n
 
-    int i = 0;
     // parse the line into words
+    int i = 0;
     while(commandList != NULL){
         array[i] = strdup(commandList);
         i++;
@@ -34,6 +35,7 @@ int read_command(char cmd[], char *par[]){
     return 0;
 }
 
+// clears screen then wish shell starts
 void prompt(){
     static int first_time = 1;
 
@@ -43,34 +45,48 @@ void prompt(){
         write(STDERR_FILENO, clear_screen_ansi, 12);
         first_time = 0;
     }
+
     printf("wish> ");
 }
 
-void cd_command(){
-
+// if any error due to bad syntax from user
+void error_message(){
+    char error_message[30] = "An error has occurred\n";
+    write(STDERR_FILENO, error_message, strlen(error_message));
+    exit(0);
 }
 
-int main(){
+void cd_command(char *par){
+    if(chdir(par) != 0){
+        error_message();
+    }
+}
+
+int main(int argc, char* argv[]){
     char cmd[100], command[100], *parameters[20];
 
     while(1){
         prompt(); // display prompt on screen
+
         read_command(command, parameters); // read input from terminal
         if (strcmp(command, "exit") == 0){
             exit(0);
         }
+        else if (strcmp(command, "cd") == 0){
+            cd_command(parameters[1]);
+            continue;
+        }
+
         int pid = fork();
         if(pid!=0){
-            wait(NULL);
-            // if problems, look at wait_pid(), and wif_signal()
+            wait(NULL); // if problems, look at wait_pid(), and wif_signal()
         }
         else{
-            strcpy(cmd, "/bin/");
+            strcpy(cmd, "/usr/bin/");
             strcat(cmd, command);
+
             if (execv(cmd, parameters) == -1){ // execute command
-                char error_message[30] = "An error has occurred\n";
-                write(STDERR_FILENO, error_message, strlen(error_message)); 
-                exit(0);
+                error_message();
             }
         }
     }

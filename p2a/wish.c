@@ -62,18 +62,65 @@ void cd_command(char *par){
     }
 }
 
+void path_command(char **path, char **parameters, int *num_of_path){
+    int i = 1;
+    int j = 0;
+    while(1){
+        if (parameters[i] == NULL){
+            break;
+        }
+        else{
+            path[j] = parameters[i];
+            (*num_of_path)++;
+        }
+        i++;
+        j++;
+    }
+}
+
+void execute(char *cmd, char **parameters, char *path, char *command, int *num_of_path){
+    //for (int i = 0; i < *num_of_path; i++){
+    int i = 0;
+    int j = 0;
+    while(i < *num_of_path){
+        if(access(&path[j], X_OK) != -1){
+            strcpy(cmd, &path[j]);
+            strcat(cmd, "/");
+            strcat(cmd, command);
+            execv(cmd, parameters);
+        }
+
+        // +32 because path is a list of pointers (to list of char, so string)
+        // so each space is 32 bits apart (because int is 32 bits)
+        j += 32;
+
+        i += 1; 
+    }
+    error_message();
+}
+
 int main(int argc, char* argv[]){
     char cmd[100], command[100], *parameters[20];
+    
+    char *path[100];
+    path[0] = "/bin";
+
+    int num_of_path = 1;
 
     while(1){
         prompt(); // display prompt on screen
-
         read_command(command, parameters); // read input from terminal
+
         if (strcmp(command, "exit") == 0){
             exit(0);
         }
         else if (strcmp(command, "cd") == 0){
             cd_command(parameters[1]);
+            continue;
+        }
+        else if(strcmp(command, "path") == 0){
+            num_of_path = 0;
+            path_command(path, parameters, &num_of_path);
             continue;
         }
 
@@ -82,12 +129,7 @@ int main(int argc, char* argv[]){
             wait(NULL); // if problems, look at wait_pid(), and wif_signal()
         }
         else{
-            strcpy(cmd, "/usr/bin/");
-            strcat(cmd, command);
-
-            if (execv(cmd, parameters) == -1){ // execute command
-                error_message();
-            }
+            execute(cmd, parameters, *path, command, &num_of_path);
         }
     }
     return 0;

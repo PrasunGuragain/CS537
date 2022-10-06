@@ -1,0 +1,9 @@
+total 35
+-rw------- 1 prasun prasun    48 Oct  6 16:18 a.txt
+-rw------- 1 prasun prasun     0 Oct  6 16:18 b.txt
+-rw-rw-r-- 1 prasun prasun    76 Oct  6 15:22 hello.c
+-rw-rw-r-- 1 prasun prasun   124 Sep 28 15:28 Makefile
+-rw-rw-r-- 1 prasun prasun    28 Oct  6 15:23 one.c
+-rwxrwxr-x 1 prasun prasun 17336 Oct  6 16:18 wish
+-rw-rw-r-- 1 prasun prasun  5883 Oct  6 16:16 wish.c
+-rw-rw-r-- 1 prasun prasun  7296 Oct  6 16:18 wish.o

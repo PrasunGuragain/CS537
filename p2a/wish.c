@@ -4,34 +4,62 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+
+void redirection(char *commandList, char **path, int num_of_path);
+void handel_fork(char **parameters, char **path, char* command, int num_of_path, int redirecting, char *file_name);
+void if_then(char *command);
+
 
 // reads user input
-int read_command(char cmd[], char *par[]){
+int read_command(char cmd[], char *par[], char **path, int num_of_path){
     char *array[100], *commandList;
+    commandList = malloc(100*sizeof(char));
 
-    char *command = NULL;
+    char *command;
+    command = malloc(256*sizeof(char));
     size_t bufsize = 0;
     getline(&command, &bufsize, stdin);
 
-    commandList = strtok(command, " \n"); // remove end line \n
+    // if_then
+    //printf("command[0]: %c, command[1]: %c\n", command[0], command[1]);
+    if (command[0] == 'i' && command[1] == 'f'){
+        if_then(command);
+        return -1;
+    }
+
+    // Redirection
+    char * ret;
+    ret = strchr(command, '>');
+    if (ret != NULL){
+        redirection(command, path, num_of_path);
+        return -1;
+    }
 
     // parse the line into words
     int i = 0;
+    commandList = strtok(command, " \t\n");
     while(commandList != NULL){
         array[i] = strdup(commandList);
         i++;
-        commandList = strtok(NULL, " \n");
+        commandList = strtok(NULL, " \t\n");
     }
-    
+
     // first word is the command
     strcpy(cmd, array[0]);
 
     // others are parameters
-    for(int j = 0; j < i; j++){
+    int j = 0;
+    while (j < i){
         par[j] = array[j];
+        j++;
     }
-    par[i] = NULL; // NULL-terminate the parameter list
 
+    // need "/0" right after the end of parameters
+    par[i] = NULL;
+
+    free(commandList);
     return 0;
 }
 
@@ -63,23 +91,21 @@ void cd_command(char *par){
 }
 
 void path_command(char **path, char **parameters, int *num_of_path){
-    int i = 1;
-    int j = 0;
+    int i = 0;
     while(1){
         if (parameters[i] == NULL){
             break;
         }
         else{
-            path[j] = parameters[i];
+            path[i] = parameters[i];
             (*num_of_path)++;
         }
         i++;
-        j++;
     }
 }
 
-void execute(char *cmd, char **parameters, char *path, char *command, int *num_of_path){
-    //for (int i = 0; i < *num_of_path; i++){
+void execute(char **parameters, char *path, char *command, int *num_of_path){
+    char *cmd;
     int i = 0;
     int j = 0;
     while(i < *num_of_path){
@@ -90,8 +116,7 @@ void execute(char *cmd, char **parameters, char *path, char *command, int *num_o
             execv(cmd, parameters);
         }
 
-        // +32 because path is a list of pointers (to list of char, so string)
-        // so each space is 32 bits apart (because int is 32 bits)
+        // I believe +32 because int is 32 bit and path is a list of pointers to the first element of a string
         j += 32;
 
         i += 1; 
@@ -99,8 +124,82 @@ void execute(char *cmd, char **parameters, char *path, char *command, int *num_o
     error_message();
 }
 
+void redirection(char *line, char **path, int num_of_path){
+    // Get everything to left of ">" (operation)
+    char *params_str = strtok(line, ">");
+
+    // Get everything to right of ">" (file name)
+    char *file_name = strtok(NULL, ">");
+    file_name = strtok(file_name, " \n");
+
+    // Stores all the parameters. If ls -l, this will store -l
+    char *all_params[100];
+
+    // the command. If ls -l, this will store ls
+    char *current = strtok(params_str, " ");
+    char *command = current;
+    all_params[0] = command;
+
+    int i = 1;
+    while(current){
+        current = strtok(NULL, " ");
+        all_params[i] = current;
+        i++;
+    }
+
+    // I was wrong about parameters. If user type ls -l, parameters should be:
+    // [ls, -1, null(/0)] and command should be: "ls"
+    handel_fork(all_params, path, command, num_of_path, 1, file_name);
+}
+
+void handel_fork(char **parameters, char **path, char* command, int num_of_path, int redirecting, char *file_name){
+    int pid = fork();
+    if(pid!=0){
+        wait(&pid); // if problems, look at wait_pid(), and wif_signal()
+    }
+    else{
+        if (redirecting == 1){
+            // open file
+            int fd = open(file_name, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+
+            // make stdout go to file
+            dup2(fd, 1);
+
+            // make stderr go to file
+            dup2(fd, 2);
+
+            close(fd);
+        }
+        execute(parameters, *path, command, &num_of_path);
+    }
+}
+
+void if_then(char *line){
+    printf("In if then...\n");
+
+    char *temp_line = malloc(sizeof(char)*100);
+    strcpy(temp_line, line);
+
+    // strstr() will point to 't' in the first then, so "then" and after
+    char *then_and_after = strstr(temp_line, "then");
+
+    char *array[100];
+    char *current = strtok(line, " ");
+
+    int i = 0;
+    while(current){
+        array[i] = current;
+        current = strtok(NULL, " ");
+        i++;
+    }
+
+    
+
+    free(temp_line);
+}
+
 int main(int argc, char* argv[]){
-    char cmd[100], command[100], *parameters[20];
+    char command[100], *parameters[100];
     
     char *path[100];
     path[0] = "/bin";
@@ -109,7 +208,12 @@ int main(int argc, char* argv[]){
 
     while(1){
         prompt(); // display prompt on screen
-        read_command(command, parameters); // read input from terminal
+        int read_return = read_command(command, parameters, path, num_of_path); // read input from terminal
+
+        // if done redirection or if_then command, don't handel_fork() again
+        if (read_return  == -1){
+            continue;
+        }
 
         if (strcmp(command, "exit") == 0){
             exit(0);
@@ -123,14 +227,10 @@ int main(int argc, char* argv[]){
             path_command(path, parameters, &num_of_path);
             continue;
         }
-
-        int pid = fork();
-        if(pid!=0){
-            wait(NULL); // if problems, look at wait_pid(), and wif_signal()
-        }
-        else{
-            execute(cmd, parameters, *path, command, &num_of_path);
-        }
+        
+        // if no redirection, cd, exit, or path
+        char *file_name = "";
+        handel_fork(parameters, path, command, num_of_path, 0, file_name);
     }
     return 0;
 }

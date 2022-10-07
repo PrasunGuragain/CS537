@@ -1,0 +1,15 @@
+ls
+cd ..
+ls
+cd p2a
+ls
+ls -l
+ls > a.txt
+ls -l > b.txt
+path /wrong
+ls
+path /bin
+cd ..
+ls
+ls
+exit

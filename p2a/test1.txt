@@ -1,0 +1,99 @@
+[prasun@royal-29] (117)$ ~cs537-1/tests/p2a/test-wish.sh -c
+test 1: passed
+test 2: passed
+test 3: passed
+test 4: passed
+test 5: passed
+test 6: passed
+test 7: passed
+test 8: passed
+test 9: passed
+test 10: passed
+test 11: passed
+test 12: passed
+test 13: passed
+test 14: passed
+test 15: 15.rc incorrect
+  what results should be found in file: /u/c/s/cs537-1/tests/p2a/tests/15.rc
+  what results produced by your program: tests-out/15.rc
+  compare the two using diff, cmp, or related tools to debug, e.g.:
+  prompt> diff /u/c/s/cs537-1/tests/p2a/tests/15.rc tests-out/15.rc
+  See tests/15.run for what is being run
+test 15: 15.out incorrect
+  what results should be found in file: /u/c/s/cs537-1/tests/p2a/tests/15.out
+  what results produced by your program: tests-out/15.out
+  compare the two using diff, cmp, or related tools to debug, e.g.:
+  prompt> diff /u/c/s/cs537-1/tests/p2a/tests/15.out tests-out/15.out
+  See tests/15.run for what is being run
+test 15: 15.err incorrect
+  what results should be found in file: /u/c/s/cs537-1/tests/p2a/tests/15.err
+  what results produced by your program: tests-out/15.err
+  compare the two using diff, cmp, or related tools to debug, e.g.:
+  prompt> diff /u/c/s/cs537-1/tests/p2a/tests/15.err tests-out/15.err
+  See tests/15.run for what is being run
+test 16: passed
+test 17: 17.out incorrect
+  what results should be found in file: /u/c/s/cs537-1/tests/p2a/tests/17.out
+  what results produced by your program: tests-out/17.out
+  compare the two using diff, cmp, or related tools to debug, e.g.:
+  prompt> diff /u/c/s/cs537-1/tests/p2a/tests/17.out tests-out/17.out
+  See tests/17.run for what is being run
+test 18: passed
+test 19: 19.out incorrect
+  what results should be found in file: /u/c/s/cs537-1/tests/p2a/tests/19.out
+  what results produced by your program: tests-out/19.out
+  compare the two using diff, cmp, or related tools to debug, e.g.:
+  prompt> diff /u/c/s/cs537-1/tests/p2a/tests/19.out tests-out/19.out
+  See tests/19.run for what is being run
+test 20: passed
+test 21: 21.out incorrect
+  what results should be found in file: /u/c/s/cs537-1/tests/p2a/tests/21.out
+  what results produced by your program: tests-out/21.out
+  compare the two using diff, cmp, or related tools to debug, e.g.:
+  prompt> diff /u/c/s/cs537-1/tests/p2a/tests/21.out tests-out/21.out
+  See tests/21.run for what is being run
+test 22: passed
+test 23: 23.out incorrect
+  what results should be found in file: /u/c/s/cs537-1/tests/p2a/tests/23.out
+  what results produced by your program: tests-out/23.out
+  compare the two using diff, cmp, or related tools to debug, e.g.:
+  prompt> diff /u/c/s/cs537-1/tests/p2a/tests/23.out tests-out/23.out
+  See tests/23.run for what is being run
+test 24: 24.err incorrect
+  what results should be found in file: /u/c/s/cs537-1/tests/p2a/tests/24.err
+  what results produced by your program: tests-out/24.err
+  compare the two using diff, cmp, or related tools to debug, e.g.:
+  prompt> diff /u/c/s/cs537-1/tests/p2a/tests/24.err tests-out/24.err
+  See tests/24.run for what is being run
+test 25: passed
+test 26: passed
+test 27: passed
+test 28: passed
+test 29: passed
+test 30: passed
+test 31: 31.out incorrect
+  what results should be found in file: /u/c/s/cs537-1/tests/p2a/tests/31.out
+  what results produced by your program: tests-out/31.out
+  compare the two using diff, cmp, or related tools to debug, e.g.:
+  prompt> diff /u/c/s/cs537-1/tests/p2a/tests/31.out tests-out/31.out
+  See tests/31.run for what is being run
+test 31: 31.err incorrect
+  what results should be found in file: /u/c/s/cs537-1/tests/p2a/tests/31.err
+  what results produced by your program: tests-out/31.err
+  compare the two using diff, cmp, or related tools to debug, e.g.:
+  prompt> diff /u/c/s/cs537-1/tests/p2a/tests/31.err tests-out/31.err
+  See tests/31.run for what is being run
+test 32: 32.out incorrect
+  what results should be found in file: /u/c/s/cs537-1/tests/p2a/tests/32.out
+  what results produced by your program: tests-out/32.out
+  compare the two using diff, cmp, or related tools to debug, e.g.:
+  prompt> diff /u/c/s/cs537-1/tests/p2a/tests/32.out tests-out/32.out
+  See tests/32.run for what is being run
+test 33: passed
+test 34: 34.err incorrect
+  what results should be found in file: /u/c/s/cs537-1/tests/p2a/tests/34.err
+  what results produced by your program: tests-out/34.err
+  compare the two using diff, cmp, or related tools to debug, e.g.:
+  prompt> diff /u/c/s/cs537-1/tests/p2a/tests/34.err tests-out/34.err
+  See tests/34.run for what is being run
+[prasun@royal-29] (118)$ 

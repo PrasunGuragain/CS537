@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 
 int read_command(char cmd[], char *par[], char **path, int num_of_path, int isBatchMode, FILE *fp);
-void handel_fork(char **parameters, char **path, char *command, int num_of_path, int redirecting, char *file_name);
+int handel_fork(char **parameters, char **path, char *command, int num_of_path, int redirecting, char *file_name);
 void execute(char **parameters, char **path, char *command, int *num_of_path, int redirecting, char *file_name);
 int redirection(char *commandList, char **path, int num_of_path);
 void batchMode(char *file);
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
             break;
         }
         
-        // if done redirection or if_then command, don't handel_fork() again
+        // if done redirection, if_then command, or something bad user syntax, don't handel_fork() again
         if (read_return == -1)
         {
             continue;
@@ -120,6 +120,12 @@ int read_command(char cmd[], char *par[], char **path, int num_of_path, int isBa
         getLine_return = getline(&command, &bufsize, stdin);
     }
 
+    // test 15: Tests command with variable whitespace.
+    //printf("command: **%s**\nstrlen(command): %ld\n", command, strlen(command));
+    if (strcmp(command, "\n") == 0 || strcmp(command, "/0") == 0 || strcmp(command, "\t") == 0){
+        return -1;
+    }
+
     // batch file done
     if (getLine_return < 0){
         return 2;
@@ -149,6 +155,9 @@ int read_command(char cmd[], char *par[], char **path, int num_of_path, int isBa
     // parse the line into words
     int i = 0;
     commandList = strtok(command, " \t\n");
+    if (commandList == NULL){
+        return -1;
+    }
     while (commandList != NULL)
     {
         array[i] = strdup(commandList);
@@ -174,12 +183,14 @@ int read_command(char cmd[], char *par[], char **path, int num_of_path, int isBa
     return 0;
 }
 
-void handel_fork(char **parameters, char **path, char *command, int num_of_path, int redirecting, char *file_name)
+int handel_fork(char **parameters, char **path, char *command, int num_of_path, int redirecting, char *file_name)
 {
+    int exitStatus = 1;
     int pid = fork();
     if (pid > 0){
         int status;
         waitpid(pid, &status, 0);
+        exitStatus = WEXITSTATUS(status);
     }
     else if (pid == 0){
         if (redirecting == 1)
@@ -198,6 +209,7 @@ void handel_fork(char **parameters, char **path, char *command, int num_of_path,
         execute(parameters, path, command, &num_of_path, 0, file_name);
         exit(1);
     }
+    return exitStatus;
 }
 
 // when doing strcpy and strcat, use malloc first
@@ -390,6 +402,8 @@ void if_then(char *line)
     for (int i = 1; i < then_index-2; i++){
         some_command[i-1] = all_commands[i];
     }
+
+
 
     // NOTES:
     // execv("one", ["one", /0]);

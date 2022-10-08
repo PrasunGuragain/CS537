@@ -222,8 +222,6 @@ int redirection(char *line, char **path, int num_of_path)
     // Get everything to left of ">" (operation)
     char *params_str = strtok(line, ">");
 
-    //printf("params_str: %s\n", params_str);
-
     char *cpy_file_name;
     cpy_file_name = malloc(10000);
 
@@ -231,6 +229,13 @@ int redirection(char *line, char **path, int num_of_path)
     char *file_name;
     file_name = malloc(10000);
     file_name = strtok(NULL, ">");
+
+    // if multiple ">"
+    if(strtok(NULL, ">") != NULL){
+        error_message_without_exit();
+    }
+
+    // get rid of "\n"
     file_name = strtok(file_name, "\n");
 
     //printf("file_name: %s\n", file_name);
@@ -244,10 +249,8 @@ int redirection(char *line, char **path, int num_of_path)
 
     // if multiple file name given
     int num_of_files_given = 0;
-    //printf("cpy_file_name: %s\n", cpy_file_name);
     char *current2 = strtok(cpy_file_name, " ");
     while (current2){
-        //printf("current2: %s\n", current2);
         num_of_files_given++;
         current2 = strtok(NULL, " ");
     }
@@ -265,14 +268,11 @@ int redirection(char *line, char **path, int num_of_path)
     char *command = current;
     all_params[0] = command;
 
-    //printf("all_params[0]: %s\n", all_params[0]);
-
     int i = 1;
     while (current)
     {
         current = strtok(NULL, " ");
         all_params[i] = current;
-        //printf("all_params[%d]: %s\n", i, all_params[i]);
         i++;
     }
 

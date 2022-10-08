@@ -1,1 +1,1 @@
-/u/c/s/cs537-1/tests/tester/run-tests.sh: line 27: 1970960 Segmentation fault      (core dumped) ./wish $TESTS_FOLDER/16.in
+/u/c/s/cs537-1/tests/tester/run-tests.sh: line 27: 1979566 Segmentation fault      (core dumped) ./wish $TESTS_FOLDER/16.in

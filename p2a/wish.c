@@ -21,6 +21,7 @@ void error_message_without_exit();
 
 int main(int argc, char *argv[])
 {
+    //printf("argc: %d\n", argc);
     char command[512], *parameters[512];
 
     char *path[512];
@@ -34,16 +35,18 @@ int main(int argc, char *argv[])
     char **args;
     if (argc == 2)
     {
+        //printf("HERE1\n");
         if (!(fp = fopen(argv[1], "r")))
         {
-            error_message();
+            error_message_without_exit();
             exit(1);
         }
         isBatchMode = 1;
     }
     else if (argc < 1 || argc > 2)
     {
-        error_message();
+        //printf("HERE\n");
+        error_message_without_exit();
         exit(1);
     }
     int read_return = 0;

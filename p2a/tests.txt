@@ -1,15 +1,14 @@
+echo 1
 ls
-cd ..
-ls
-cd p2a
-ls
-ls -l
-ls > a.txt
-ls -l > b.txt
+echo 2
 path /wrong
+echo 3
 ls
+echo 4
 path /bin
-cd ..
+echo 5
 ls
+echo 6
 ls
+echo 7
 exit

@@ -9,3 +9,6 @@ wish: wish.o
 clean:
 	-rm -f wish.o
 	-rm -f wish
+
+gdb_mode:
+	gcc -g -o test wish.c

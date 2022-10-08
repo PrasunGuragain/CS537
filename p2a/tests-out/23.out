@@ -1,8 +1,10 @@
 hello.c
 Makefile
 one.c
+ output.9 
 output.9
 ret_arg_0
+test
 tests-out
 tests.txt
 wish
@@ -11,8 +13,10 @@ wish.o
 hello.c
 Makefile
 one.c
+ output.9 
 output.9
 ret_arg_0
+test
 tests-out
 tests.txt
 wish

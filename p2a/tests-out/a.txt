@@ -1,0 +1,72 @@
+IN HANDLE FORK
+1
+IN HANDLE FORK
+a.txt  b.txt  hello.c  Makefile  one.c  output.9  tests-out  tests.txt  wish  wish.c  wish.o
+IN HANDLE FORK
+2
+IN HANDLE FORK
+An error has occurred
+IN HANDLE FORK
+An error has occurred
+IN HANDLE FORK
+An error has occurred
+IN HANDLE FORK
+5
+IN HANDLE FORK
+a.txt  b.txt  hello.c  Makefile  one.c  output.9  tests-out  tests.txt  wish  wish.c  wish.o
+IN HANDLE FORK
+6
+IN HANDLE FORK
+a.txt  b.txt  hello.c  Makefile  one.c  output.9  tests-out  tests.txt  wish  wish.c  wish.o
+IN HANDLE FORK
+7
+IN HANDLE FORK
+An error has occurred
+IN HANDLE FORK
+4
+IN HANDLE FORK
+5
+IN HANDLE FORK
+a.txt  b.txt  hello.c  Makefile  one.c  output.9  tests-out  tests.txt  wish  wish.c  wish.o
+IN HANDLE FORK
+6
+IN HANDLE FORK
+a.txt  b.txt  hello.c  Makefile  one.c  output.9  tests-out  tests.txt  wish  wish.c  wish.o
+IN HANDLE FORK
+7
+IN HANDLE FORK
+An error has occurred
+IN HANDLE FORK
+5
+IN HANDLE FORK
+a.txt  b.txt  hello.c  Makefile  one.c  output.9  tests-out  tests.txt  wish  wish.c  wish.o
+IN HANDLE FORK
+6
+IN HANDLE FORK
+a.txt  b.txt  hello.c  Makefile  one.c  output.9  tests-out  tests.txt  wish  wish.c  wish.o
+IN HANDLE FORK
+7
+IN HANDLE FORK
+An error has occurred
+IN HANDLE FORK
+5
+IN HANDLE FORK
+a.txt  b.txt  hello.c  Makefile  one.c  output.9  tests-out  tests.txt  wish  wish.c  wish.o
+IN HANDLE FORK
+6
+IN HANDLE FORK
+a.txt  b.txt  hello.c  Makefile  one.c  output.9  tests-out  tests.txt  wish  wish.c  wish.o
+IN HANDLE FORK
+7
+IN HANDLE FORK
+An error has occurred
+IN HANDLE FORK
+a.txt  b.txt  hello.c  Makefile  one.c  output.9  tests-out  tests.txt  wish  wish.c  wish.o
+IN HANDLE FORK
+6
+IN HANDLE FORK
+a.txt  b.txt  hello.c  Makefile  one.c  output.9  tests-out  tests.txt  wish  wish.c  wish.o
+IN HANDLE FORK
+7
+IN HANDLE FORK
+An error has occurred

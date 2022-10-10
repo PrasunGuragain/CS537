@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
 
     // TODO: if one line not at end, ignores last line.
     // Also, redo's lines from recent path, or something similar
+    // Realized thats a problem doing virtually in vsc. Works in csl machine. Confused.
     while (1)
     {   
         if (isBatchMode == 0)
@@ -218,7 +219,6 @@ int handle_fork(char **parameters, char **path, char *command, int num_of_path, 
 // when doing strcpy and strcat, use malloc first
 void execute(char **parameters, char **path, char *command, int *num_of_path, int in_if_then)
 {
-    //printf("In execute\n");
     char *cmd = malloc(10000);
     int i = 0;
     while (i < *num_of_path)
@@ -229,36 +229,15 @@ void execute(char **parameters, char **path, char *command, int *num_of_path, in
         strcat(cmd, "/");
         strcat(cmd, command);
 
-        //printf("cmd: %s\n", cmd);
-
-        /*
-        path /bin ./
-        if one 1 == 1 then cd .. fi
-        */
-
         if (access(cmd, X_OK) != 0){
             i++;
             continue;
         }
-        //printf("cmd2: %s\n", cmd);
         execv(cmd, parameters);
-        //printf("Here1\n");
         error_message();
     }
-    //printf("Here2\n");
     error_message();
 }
-
-//TODO
-//if one == 0 then hello fi
-//if one.c == 0 then hello.c fi
-///home/prasun/CS537/p2a
-
-/*
-/home/prasun/CS537/p2a
-wish> path /home/prasun/CS537/p2a
-wish> if one == 0 then hello fi
-*/
 
 int redirection(char *line, char **path, int num_of_path)
 {
@@ -443,7 +422,7 @@ int if_then(char *line, char **path, int num_of_path)
     
     char *executive_cmd_without_then_and_fi[512];
     int l = 1;
-    while (l < fi_index){
+    while (l < (fi_index-then_index)){
         executive_cmd_without_then_and_fi[l-1] = executive_cmd[l];
         l++;
     }

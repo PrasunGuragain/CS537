@@ -1,15 +1,5 @@
-hello
-hello.c
-hello.o
-Makefile
-one
-one.c
-one.o
- output.9 
-r23
-test1.txt
-tests-out
-tests.txt
-wish
-wish.c
-wish.o
+/u/c/s/cs537-1/tests/p2a/tests/p2a-test:
+test1
+test2
+test3
+test4

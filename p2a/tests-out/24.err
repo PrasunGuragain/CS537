@@ -1,0 +1,2 @@
+ls: cannot access '/no/such/dir': No such file or directory
+ls: cannot access 'fi'$'\n': No such file or directory

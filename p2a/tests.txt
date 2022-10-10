@@ -11,4 +11,4 @@ ls
 echo 6
 ls
 echo 7
-exit
+

@@ -9,19 +9,18 @@
 
 int read_command(char cmd[], char *par[], char **path, int num_of_path, int isBatchMode, FILE *fp);
 int handle_fork(char **parameters, char **path, char *command, int num_of_path, int redirecting, char *file_name, int in_if_then);
-void execute(char **parameters, char **path, char *command, int *num_of_path);
+void execute(char **parameters, char **path, char *command, int *num_of_path, int in_if_then);
 int redirection(char *commandList, char **path, int num_of_path);
 void batchMode(char *file);
 void cd_command(char *par);
 void path_command(char **path, char **parameters, int *num_of_path);
-void if_then(char *line, char **path, int num_of_path);
+int if_then(char *line, char **path, int num_of_path);
 void prompt();
 void error_message();
 void error_message_without_exit();
 
 int main(int argc, char *argv[])
 {
-    //printf("argc: %d\n", argc);
     char command[512], *parameters[512];
 
     char *path[512];
@@ -35,7 +34,6 @@ int main(int argc, char *argv[])
     char **args;
     if (argc == 2)
     {
-        //printf("HERE1\n");
         if (!(fp = fopen(argv[1], "r")))
         {
             error_message_without_exit();
@@ -45,7 +43,6 @@ int main(int argc, char *argv[])
     }
     else if (argc < 1 || argc > 2)
     {
-        //printf("HERE\n");
         error_message_without_exit();
         exit(1);
     }
@@ -121,7 +118,6 @@ int read_command(char cmd[], char *par[], char **path, int num_of_path, int isBa
     }
 
     // test 15: Tests command with variable whitespace.
-    //printf("command: **%s**\nstrlen(command): %ld\n", command, strlen(command));
     if (strcmp(command, "\n") == 0 || strcmp(command, "/0") == 0 || strcmp(command, "\t") == 0){
         return -1;
     }
@@ -213,42 +209,57 @@ int handle_fork(char **parameters, char **path, char *command, int num_of_path, 
 
             close(fd);
         }
-        //printf("parameters: %s\n", parameters[0]);
-        //printf("command: %s\n", command);
-        execute(parameters, path, command, &num_of_path);
+        execute(parameters, path, command, &num_of_path, in_if_then);
         exit(1);
     }
     return exitStatus;
 }
 
 // when doing strcpy and strcat, use malloc first
-void execute(char **parameters, char **path, char *command, int *num_of_path)
+void execute(char **parameters, char **path, char *command, int *num_of_path, int in_if_then)
 {
+    //printf("In execute\n");
     char *cmd = malloc(10000);
     int i = 0;
     while (i < *num_of_path)
     {
-        //printf("HERE1\n");
         strcpy(cmd, path[i]);
+
+
         strcat(cmd, "/");
         strcat(cmd, command);
-        //printf("cmd before access: %s\n", cmd);
+
+        //printf("cmd: %s\n", cmd);
+
+        /*
+        path /bin ./
+        if one 1 == 1 then cd .. fi
+        */
+
         if (access(cmd, X_OK) != 0){
-            //printf("HER2\n");
             i++;
             continue;
         }
-        //printf("cmd in execute: %s\nparameters[0]: %s\n", cmd, parameters[0]);
+        //printf("cmd2: %s\n", cmd);
         execv(cmd, parameters);
+        //printf("Here1\n");
         error_message();
     }
-    //printf("HERE3\n");
+    //printf("Here2\n");
     error_message();
 }
+
 //TODO
 //if one == 0 then hello fi
 //if one.c == 0 then hello.c fi
 ///home/prasun/CS537/p2a
+
+/*
+/home/prasun/CS537/p2a
+wish> path /home/prasun/CS537/p2a
+wish> if one == 0 then hello fi
+*/
+
 int redirection(char *line, char **path, int num_of_path)
 {
     // Get everything to left of ">" (operation)
@@ -270,8 +281,6 @@ int redirection(char *line, char **path, int num_of_path)
     // get rid of "\n"
     file_name = strtok(file_name, "\n");
 
-    //printf("file_name: %s\n", file_name);
-
     // if no file name given
     if (file_name == NULL){
         error_message();
@@ -286,16 +295,11 @@ int redirection(char *line, char **path, int num_of_path)
         num_of_files_given++;
         current2 = strtok(NULL, " ");
     }
-    //printf("num_of_files_given: %d\n", num_of_files_given);
     if (num_of_files_given != 1){
         error_message_without_exit();
         return -1;
     }
-/*
-/home/prasun/CS537/p2a
-wish> path /home/prasun/CS537/p2a
-wish> if one == 0 then hello fi
-*/
+
     // Stores all the parameters. If ls -l, this will store -l
     char *all_params[512];
 
@@ -351,7 +355,7 @@ void path_command(char **path, char **parameters, int *num_of_path)
     }
 }
 
-void if_then(char *line, char **path, int num_of_path)
+int if_then(char *line, char **path, int num_of_path)
 {
     char *temp_line = malloc(sizeof(char) * 512);
     strcpy(temp_line, line);
@@ -420,9 +424,12 @@ void if_then(char *line, char **path, int num_of_path)
     char *some_command[512];
 
     // get some_command 
-    for (int i = 1; i < then_index-2; i++){
-        some_command[i-1] = all_commands[i];
+    int k = 1;
+    while (k < then_index-2){
+        some_command[k-1] = all_commands[k];
+        k++;
     }
+    some_command[k] = NULL;
 
     // get executive command
     char *executive_cmd[512];
@@ -433,26 +440,36 @@ void if_then(char *line, char **path, int num_of_path)
         current2 = strtok(NULL, " ");
         j++;
     }
+    
+    char *executive_cmd_without_then_and_fi[512];
+    int l = 1;
+    while (l < fi_index){
+        executive_cmd_without_then_and_fi[l-1] = executive_cmd[l];
+        l++;
+    }
+    executive_cmd_without_then_and_fi[l] = NULL;
 
-    // get return from some_command
+    if (strcmp(executive_cmd_without_then_and_fi[0], "cd") == 0)
+    {
+        cd_command(executive_cmd_without_then_and_fi[1]);
+        return 0;
+    }
+
+    // first run the condition
+    int fork_return = handle_fork(some_command, path, some_command[0], num_of_path, 0, "", 1);
+    
+    // then run executive command
     char *parameters[512];
     parameters[0] = some_command[0];
     parameters[1] = NULL;
-    int fork_return = handle_fork(parameters, path, some_command[0], num_of_path, 0, "", 1);
-    
-    parameters[0] = some_command[0];
-    //printf("operator: %s\n", operator);
     if(strcmp(operator, "==") == 0){
-        //printf("fork_return: %d\n", fork_return);
-        //printf("int_constant: %d\n", int_constant);
         if(fork_return == int_constant){
-            //printf("inside if\n");
-            handle_fork(parameters, path, executive_cmd[1], num_of_path, 0, "", 0);
+            handle_fork(executive_cmd_without_then_and_fi, path, executive_cmd[1], num_of_path, 0, "", 0);
         }
     }
     else if(strcmp(operator, "!=") == 0){
         if(fork_return != int_constant){
-            handle_fork(parameters, path, executive_cmd[1], num_of_path, 0, "", 0);
+            handle_fork(executive_cmd_without_then_and_fi, path, executive_cmd[1], num_of_path, 0, "", 0);
         }
     }
 
@@ -461,6 +478,7 @@ void if_then(char *line, char **path, int num_of_path)
     // cat batch_file | ./wish
 
     free(temp_line);
+    return 0;
 }
 
 // clears screen then wish shell starts

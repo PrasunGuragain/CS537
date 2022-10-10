@@ -1,3 +1,4 @@
+hello
 hello.c
 hello.o
 Makefile
@@ -11,4 +12,3 @@ tests.txt
 wish
 wish.c
 wish.o
-ish.o

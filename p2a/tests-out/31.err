@@ -1,1 +1,4 @@
+ls: cannot access '>': No such file or directory
+ls: cannot access 'output31.out': No such file or directory
+ls: cannot access 'fi'$'\n': No such file or directory
 cat: output31.out: No such file or directory

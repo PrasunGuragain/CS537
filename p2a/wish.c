@@ -8,13 +8,13 @@
 #include <sys/stat.h>
 
 int read_command(char cmd[], char *par[], char **path, int num_of_path, int isBatchMode, FILE *fp);
-int handel_fork(char **parameters, char **path, char *command, int num_of_path, int redirecting, char *file_name);
-void execute(char **parameters, char **path, char *command, int *num_of_path, int redirecting, char *file_name);
+int handle_fork(char **parameters, char **path, char *command, int num_of_path, int redirecting, char *file_name, int in_if_then);
+void execute(char **parameters, char **path, char *command, int *num_of_path);
 int redirection(char *commandList, char **path, int num_of_path);
 void batchMode(char *file);
 void cd_command(char *par);
 void path_command(char **path, char **parameters, int *num_of_path);
-void if_then(char *line);
+void if_then(char *line, char **path, int num_of_path);
 void prompt();
 void error_message();
 void error_message_without_exit();
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
             break;
         }
         
-        // if done redirection, if_then command, or something bad user syntax, don't handel_fork() again
+        // if done redirection, if_then command, or something bad user syntax, don't handle_fork() again
         if (read_return == -1)
         {
             continue;
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
         else{
             // if no redirection, cd, exit, or path
             char *file_name = "";
-            handel_fork(parameters, path, command, num_of_path, 0, file_name);
+            handle_fork(parameters, path, command, num_of_path, 0, file_name, 0);
         }
     }
     return 0;
@@ -139,7 +139,7 @@ int read_command(char cmd[], char *par[], char **path, int num_of_path, int isBa
     // if_then
     if (command[0] == 'i' && command[1] == 'f')
     {
-        if_then(command);
+        if_then(command, path, num_of_path);
         return -1;
     }
 
@@ -155,6 +155,8 @@ int read_command(char cmd[], char *par[], char **path, int num_of_path, int isBa
     // parse the line into words
     int i = 0;
     commandList = strtok(command, " \t\n");
+
+    // if long empty line
     if (commandList == NULL){
         return -1;
     }
@@ -183,13 +185,18 @@ int read_command(char cmd[], char *par[], char **path, int num_of_path, int isBa
     return 0;
 }
 
-int handel_fork(char **parameters, char **path, char *command, int num_of_path, int redirecting, char *file_name)
+int handle_fork(char **parameters, char **path, char *command, int num_of_path, int redirecting, char *file_name, int in_if_then)
 {
     int exitStatus = 1;
     int pid = fork();
     if (pid > 0){
         int status;
-        waitpid(pid, &status, 0);
+        if (in_if_then == 1){
+            waitpid(-1, &status, 0);
+        }
+        else{
+            waitpid(pid, &status, 0);
+        }
         exitStatus = WEXITSTATUS(status);
     }
     else if (pid == 0){
@@ -206,32 +213,42 @@ int handel_fork(char **parameters, char **path, char *command, int num_of_path, 
 
             close(fd);
         }
-        execute(parameters, path, command, &num_of_path, 0, file_name);
+        //printf("parameters: %s\n", parameters[0]);
+        //printf("command: %s\n", command);
+        execute(parameters, path, command, &num_of_path);
         exit(1);
     }
     return exitStatus;
 }
 
 // when doing strcpy and strcat, use malloc first
-void execute(char **parameters, char **path, char *command, int *num_of_path, int redirecting, char *file_name)
+void execute(char **parameters, char **path, char *command, int *num_of_path)
 {
     char *cmd = malloc(10000);
     int i = 0;
     while (i < *num_of_path)
     {
+        //printf("HERE1\n");
         strcpy(cmd, path[i]);
         strcat(cmd, "/");
         strcat(cmd, command);
+        //printf("cmd before access: %s\n", cmd);
         if (access(cmd, X_OK) != 0){
+            //printf("HER2\n");
             i++;
             continue;
         }
+        //printf("cmd in execute: %s\nparameters[0]: %s\n", cmd, parameters[0]);
         execv(cmd, parameters);
         error_message();
     }
+    //printf("HERE3\n");
     error_message();
 }
-
+//TODO
+//if one == 0 then hello fi
+//if one.c == 0 then hello.c fi
+///home/prasun/CS537/p2a
 int redirection(char *line, char **path, int num_of_path)
 {
     // Get everything to left of ">" (operation)
@@ -274,7 +291,11 @@ int redirection(char *line, char **path, int num_of_path)
         error_message_without_exit();
         return -1;
     }
-
+/*
+/home/prasun/CS537/p2a
+wish> path /home/prasun/CS537/p2a
+wish> if one == 0 then hello fi
+*/
     // Stores all the parameters. If ls -l, this will store -l
     char *all_params[512];
 
@@ -293,7 +314,7 @@ int redirection(char *line, char **path, int num_of_path)
 
     // I was wrong about parameters. If user type ls -l, parameters should be:
     // [ls, -1, null(/0)] and command should be: "ls"
-    handel_fork(all_params, path, command, num_of_path, 1, file_name);
+    handle_fork(all_params, path, command, num_of_path, 1, file_name, 0);
 
     return 0;
 }
@@ -330,7 +351,7 @@ void path_command(char **path, char **parameters, int *num_of_path)
     }
 }
 
-void if_then(char *line)
+void if_then(char *line, char **path, int num_of_path)
 {
     char *temp_line = malloc(sizeof(char) * 512);
     strcpy(temp_line, line);
@@ -346,7 +367,6 @@ void if_then(char *line)
     int then_index = -1;
     int fi_index = -1;
 
-    
     int check_for_if = 0;
     int check_for_comparator = 0;
     int check_for_then = 0;
@@ -393,6 +413,7 @@ void if_then(char *line)
     }
 
     char *constant = all_commands[then_index-1];
+    int int_constant = atoi(constant);
     char *operator = all_commands[then_index-2];
 
     // command between if and operator
@@ -403,7 +424,37 @@ void if_then(char *line)
         some_command[i-1] = all_commands[i];
     }
 
+    // get executive command
+    char *executive_cmd[512];
+    char *current2 = strtok(then_and_after, " ");
+    int j = 0;
+    while (current2){
+        executive_cmd[j] = current2;
+        current2 = strtok(NULL, " ");
+        j++;
+    }
 
+    // get return from some_command
+    char *parameters[512];
+    parameters[0] = some_command[0];
+    parameters[1] = NULL;
+    int fork_return = handle_fork(parameters, path, some_command[0], num_of_path, 0, "", 1);
+    
+    parameters[0] = some_command[0];
+    //printf("operator: %s\n", operator);
+    if(strcmp(operator, "==") == 0){
+        //printf("fork_return: %d\n", fork_return);
+        //printf("int_constant: %d\n", int_constant);
+        if(fork_return == int_constant){
+            //printf("inside if\n");
+            handle_fork(parameters, path, executive_cmd[1], num_of_path, 0, "", 0);
+        }
+    }
+    else if(strcmp(operator, "!=") == 0){
+        if(fork_return != int_constant){
+            handle_fork(parameters, path, executive_cmd[1], num_of_path, 0, "", 0);
+        }
+    }
 
     // NOTES:
     // execv("one", ["one", /0]);

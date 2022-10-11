@@ -334,13 +334,22 @@ void path_command(char **path, char **parameters, int *num_of_path)
     }
 }
 
+/*
+path /bin ./
+wish> if one 10 == 10 then ls > a.txt fi
+*/
+
 int if_then(char *line, char **path, int num_of_path)
 {
+    //("In if_then\n");
     char *temp_line = malloc(sizeof(char) * 512);
     strcpy(temp_line, line);
 
     // strstr() will point to 't' in the first then, so "then" and after
     char *then_and_after = strstr(temp_line, "then");
+    //char *then_and_after_cpy = malloc(512 * sizeof(char));
+    char *then_and_after_cpy = strdup(then_and_after);
+    strcpy(then_and_after_cpy, then_and_after);
 
     char *all_commands[512];
     char *current1 = strtok(line, " ");
@@ -395,6 +404,10 @@ int if_then(char *line, char **path, int num_of_path)
         error_message();
     }
 
+    if ((then_index+1) == fi_index){
+        return 0;
+    }
+
     char *constant = all_commands[then_index-1];
     int int_constant = atoi(constant);
     char *operator = all_commands[then_index-2];
@@ -428,12 +441,6 @@ int if_then(char *line, char **path, int num_of_path)
     }
     executive_cmd_without_then_and_fi[l] = NULL;
 
-    if (strcmp(executive_cmd_without_then_and_fi[0], "cd") == 0)
-    {
-        cd_command(executive_cmd_without_then_and_fi[1]);
-        return 0;
-    }
-
     // first run the condition
     int fork_return = handle_fork(some_command, path, some_command[0], num_of_path, 0, "", 1);
     
@@ -443,11 +450,78 @@ int if_then(char *line, char **path, int num_of_path)
     parameters[1] = NULL;
     if(strcmp(operator, "==") == 0){
         if(fork_return == int_constant){
+            // cd command
+            if (strcmp(executive_cmd_without_then_and_fi[0], "cd") == 0)
+            {
+                cd_command(executive_cmd_without_then_and_fi[1]);
+                return 0;
+            }
+
+            // Redirection
+            char *ret;
+            ret = strchr(then_and_after_cpy, '>');
+            if (ret != NULL)
+            {
+                char *between_then_and_fi = malloc(512 * sizeof(char));
+                char *current = strtok(then_and_after_cpy, " ");
+                while(strcmp(current, "fi\n") != 0){
+                    current = strtok(NULL, " ");
+                    if (strcmp(current, "then") == 0){
+                        continue;
+                    }
+                    strcat(between_then_and_fi, current);
+                    strcat(between_then_and_fi, " ");
+                }
+
+                char *left_of_fi = strtok(between_then_and_fi, "fi");
+
+                /*
+                int c = 0;
+                char curr = left_of_fi[c];
+                while(strcmp(curr, " ") == 0){
+                    curr = left_of_fi[c];
+                    c++;
+                }
+                left_of_fi[c] = NULL;
+                */
+
+                redirection(left_of_fi, path, num_of_path);
+                return 0;
+            }
+
             handle_fork(executive_cmd_without_then_and_fi, path, executive_cmd[1], num_of_path, 0, "", 0);
         }
     }
     else if(strcmp(operator, "!=") == 0){
         if(fork_return != int_constant){
+            // cd
+            if (strcmp(executive_cmd_without_then_and_fi[0], "cd") == 0)
+            {
+                cd_command(executive_cmd_without_then_and_fi[1]);
+                return 0;
+            }
+
+            // Redirection
+            char *ret;
+            ret = strchr(then_and_after_cpy, '>');
+            if (ret != NULL)
+            {
+                char *between_then_and_fi = malloc(512 * sizeof(char));
+                char *current = strtok(then_and_after_cpy, " ");
+                while(strcmp(current, "fi\n") != 0){
+                    current = strtok(NULL, " ");
+                    if (strcmp(current, "then") == 0){
+                        continue;
+                    }
+                    strcat(between_then_and_fi, current);
+                    strcat(between_then_and_fi, " ");
+                }
+
+                char *left_of_fi = strtok(between_then_and_fi, "fi");
+                redirection(left_of_fi, path, num_of_path);
+                return 0;
+            }
+
             handle_fork(executive_cmd_without_then_and_fi, path, executive_cmd[1], num_of_path, 0, "", 0);
         }
     }
@@ -457,6 +531,7 @@ int if_then(char *line, char **path, int num_of_path)
     // cat batch_file | ./wish
 
     free(temp_line);
+    free(then_and_after_cpy);
     return 0;
 }
 

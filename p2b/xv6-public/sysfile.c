@@ -15,6 +15,57 @@
 #include "sleeplock.h"
 #include "file.h"
 #include "fcntl.h"
+#include "pstat.h"
+
+// for read-only, these files: vm.c, mmu.h, sysfile.c
+
+int
+sys_settickets(int number)
+{  
+    struct proc* curr_proc = myproc();
+    int ticket;
+
+    // first argument from user
+    if(argint(0, &ticket) < 0){
+        return -1;
+    }
+
+    if (ticket < 0 || ticket > 1){
+        return -1;
+    }
+
+    if (ticket == 0){
+        curr_proc -> priority = 0;
+    }
+
+    if (ticket == 1){
+        curr_proc -> priority = 1;
+    }
+
+    return 0;
+    
+}
+
+int
+sys_getpinfo(struct pstat *)
+{
+    struct pstat* curr_state;
+
+    if(argptr(0, (void*)&curr_state, sizeof(*curr_state)) < 0){
+        return -1;
+    }
+
+    struct pstat* p_state = iterate_ptable();
+
+    for(int i = 0; i < NPROC; i++){
+        curr_state->inuse[i] = p_state->inuse[i];
+        curr_state->pid[i] = p_state->pid[i];
+        curr_state->tickets[i] = p_state->tickets[i];
+        curr_state->ticks[i] = p_state->ticks[i];
+    }
+    
+    return 0;
+}
 
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.

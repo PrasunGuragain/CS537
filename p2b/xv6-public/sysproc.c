@@ -8,18 +8,6 @@
 #include "proc.h"
 
 int
-sys_settickets(void)
-{
-    return 222;
-}
-
-int
-sys_getpinfo(void)
-{
-    return 111;
-}
-
-int
 sys_fork(void)
 {
   return fork();

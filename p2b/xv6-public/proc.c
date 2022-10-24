@@ -6,20 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
-
-#ifndef _PSTAT_H_
-#define _PSTAT_H_
-
-#include "param.h"
-
-struct pstat{
-    int inuse[NPROC];   // whether this slot of the process table is in use (1 or 0)
-    int tickets[NPROC]; // the number of tickets this process has
-    int pid[NPROC];     // the PID of each process 
-    int ticks[NPROC];   // the number of ticks each process has accumulated
-};
-
-#endif // _PSTAT_H_
+#include "pstat.h"
 
 struct {
   struct spinlock lock;
@@ -27,12 +14,34 @@ struct {
 } ptable;
 
 static struct proc *initproc;
+struct pstat *pstate;
 
 int nextpid = 1;
 extern void forkret(void);
 extern void trapret(void);
 
 static void wakeup1(void *chan);
+
+struct pstat* iterate_ptable(void){
+  struct proc *p;
+  int i = 0;
+
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if (p->state != UNUSED){
+        pstate->inuse[i] = 1;
+      } 
+      else{
+        pstate->inuse[i] = 0;
+      }
+
+      pstate->tickets[i] = p->priority;
+      pstate->pid[i] = p->pid;
+      pstate->ticks[i] = p->run_ticks;
+      i++;
+    }
+    
+  return pstate;
+}
 
 void
 pinit(void)
@@ -339,16 +348,22 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
-  
+
   for(;;){
     // Enable interrupts on this processor.
     sti();
+    
+    int first_loop = 0;
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
+      
+      // first priority = 1 scheduled
+      if(p->state != RUNNABLE || p->priority == 0)
         continue;
+      
+      first_loop = 1;
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
@@ -356,6 +371,7 @@ scheduler(void)
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
+      p->run_ticks++;
 
       swtch(&(c->scheduler), p->context);
       switchkvm();
@@ -365,6 +381,34 @@ scheduler(void)
       c->proc = 0;
     }
     release(&ptable.lock);
+
+    // if current process priority = 1, don't go into second for loop
+    if (first_loop == 0){
+        // Loop over process table looking for process to run.
+        acquire(&ptable.lock);
+        for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+        
+        // second priority = 0 scheduled
+        if(p->state != RUNNABLE || p->priority == 1)
+            continue;
+
+        // Switch to chosen process.  It is the process's job
+        // to release ptable.lock and then reacquire it
+        // before jumping back to us.
+        c->proc = p;
+        switchuvm(p);
+        p->state = RUNNING;
+        p->run_ticks++;
+
+        swtch(&(c->scheduler), p->context);
+        switchkvm();
+
+        // Process is done running for now.
+        // It should have changed its p->state before coming back.
+        c->proc = 0;
+        }
+        release(&ptable.lock);
+    }
 
   }
 }

@@ -22,7 +22,7 @@ extern void trapret(void);
 
 static void wakeup1(void *chan);
 
-struct pstat* iterate_ptable(void){
+struct pstat* iterate_ptable(struct pstat* pstate){
   struct proc *p;
   int i = 0;
 

@@ -19,8 +19,45 @@
 
 // for read-only, these files: vm.c, mmu.h, sysfile.c
 
+int 
+sys_mprotect(void)
+{
+    int addr;
+    int len;
+    // pointer to the address
+    if(argint(0, &addr) < 0){
+        return -1;
+    }
+
+    if(argint(1, &len) < 0){
+        return -1;
+    }
+
+    // in vm.c cast to void*
+    return 0; //mprotect(addr,len);
+}
+
+int 
+sys_munprotect(void)
+{
+    // similar to mprotect
+    int addr;
+    int len;
+    // pointer to the address
+    if(argint(0, &addr) < 0){
+        return -1;
+    }
+
+    if(argint(1, &len) < 0){
+        return -1;
+    }
+
+    // in vm.c
+    return 0; //munprotect(addr,len);
+}
+
 int
-sys_settickets(int number)
+sys_settickets(void)
 {  
     struct proc* curr_proc = myproc();
     int ticket;
@@ -47,7 +84,7 @@ sys_settickets(int number)
 }
 
 int
-sys_getpinfo(struct pstat *)
+sys_getpinfo(void)
 {
     struct pstat* curr_state;
 
@@ -55,14 +92,16 @@ sys_getpinfo(struct pstat *)
         return -1;
     }
 
-    struct pstat* p_state = iterate_ptable();
-
+    //struct pstat* p_state = iterate_ptable();
+    iterate_ptable(curr_state);
+    /*
     for(int i = 0; i < NPROC; i++){
         curr_state->inuse[i] = p_state->inuse[i];
         curr_state->pid[i] = p_state->pid[i];
         curr_state->tickets[i] = p_state->tickets[i];
         curr_state->ticks[i] = p_state->ticks[i];
     }
+    */
     
     return 0;
 }

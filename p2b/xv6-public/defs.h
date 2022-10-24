@@ -121,7 +121,7 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
-struct pstat*   iterate_ptable(void);
+struct pstat*   iterate_ptable(struct pstat*);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

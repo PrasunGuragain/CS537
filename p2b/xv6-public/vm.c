@@ -10,83 +10,6 @@
 extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
 
-
-int mprotect(void *addr,int len){
-    // change the protection bits of the page range starting at addr and of len pages to be read only
-    if (len < 1){
-        return -1;
-    }
-
-    struct proc* curproc = myproc();
-
-    for(int i = 0; i < len; i++){
-        char* map_address = uva2ka(curproc->pgdir, addr);
-
-        // If it can't map user virtual address to kernel address.
-        if (map_address == 0){ 
-        return -1;
-        } 
-
-        // next page
-        addr+=PGSIZE;
-    }  
-
-    /*
-    for(int i = 0; i < len; i++){
-        pte_t* pte_address = 5;//walkpgdir(curproc->pgdir,addr,0);
-
-        // set the address to read-only
-        *pte_address = *pte_address & ~PTE_W;
-
-        // next page
-        addr += PGSIZE;
-    }
-    */
-
-    // switch to process's address space
-    lcr3(V2P(curproc->pgdir));
-    
-    return 0;
-}
-
-int munprotect(void *addr,int len){
-    // similar to mprotect, but sets the region back to both readable and writeable
-    if (len < 1){
-        return -1;
-    }
-
-    struct proc* curproc = myproc();
-
-    for(int i = 0; i < len; i++){
-        char* map_address = uva2ka(curproc->pgdir, addr);
-
-        // If it can't map user virtual address to kernel address.
-        if (map_address == 0){ 
-        return -1;
-        } 
-
-        // next page
-        addr+=PGSIZE;
-    }  
-
-    /*
-    for(int i = 0; i < len; i++){
-        pte_t* pte_address = 5;//walkpgdir(curproc->pgdir,addr,0);
-
-        // set the address to read and write
-        *pte_address = *pte_address | PTE_W; // DIFF
-
-        // next page
-        addr += PGSIZE;
-    }
-    */
-
-    // switch to process's address space
-    lcr3(V2P(curproc->pgdir));
-    
-    return 0;
-}
-
 // Set up CPU's kernel segment descriptors.
 // Run once on entry on each CPU.
 void
@@ -400,7 +323,8 @@ copyuvm(pde_t *pgdir, uint sz)
 
   if((d = setupkvm()) == 0)
     return 0;
-  for(i = 0; i < sz; i += PGSIZE){
+  // change from i = 0 to i = PGSIZE
+  for(i = PGSIZE; i < sz; i += PGSIZE){
     if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
       panic("copyuvm: pte should exist");
     if(!(*pte & PTE_P))
@@ -461,6 +385,92 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
     va = va0 + PGSIZE;
   }
   return 0;
+}
+
+int mprotect(void *addr,int len){
+    // change the protection bits of the page range starting at addr and of len pages to be read only
+    if (len < 1){
+        return -1;
+    }
+
+    struct proc* curproc = myproc();
+
+    for(int i = 0; i < len; i++){
+        char* map_address = uva2ka(curproc->pgdir, addr);
+
+        // If it can't map user virtual address to kernel address.
+        if ((int)map_address % PGSIZE != 0){ 
+            return -1;
+        } 
+    }  
+
+    for(int i = 0; i < len; i++){
+        pte_t* pte_address = walkpgdir(curproc->pgdir,addr,0);
+
+        if (pte_address){
+            if(((*pte_address & PTE_P) != 0) && ((*pte_address & PTE_U) != 0)){
+                *pte_address = *pte_address & ~PTE_W;
+            }
+            else{
+                return -1;
+            }
+        }
+        else{
+            return -1;
+        }
+
+        // next page
+        addr += PGSIZE;
+    }
+
+    // switch to process's address space
+    lcr3(V2P(curproc->pgdir));
+
+    return 0;
+}
+
+int munprotect(void *addr,int len){
+    // similar to mprotect, but sets the region back to both readable and writeable
+    if (len < 1){
+        return -1;
+    }
+
+    struct proc* curproc = myproc();
+
+    for(int i = 0; i < len; i++){
+        char* map_address = uva2ka(curproc->pgdir, addr);
+
+        // If it can't map user virtual address to kernel address.
+        if ((int)map_address % PGSIZE != 0){ 
+            return -1;
+        } 
+    }  
+
+    for(int i = 0; i < len; i++){
+        pte_t* pte_address = walkpgdir(curproc->pgdir,addr,0);
+
+        if (pte_address){
+            if(((*pte_address & PTE_P) != 0) && ((*pte_address & PTE_U) != 0)){
+                // set the address to read and write
+                *pte_address = *pte_address | PTE_W; // DIFF
+            }
+            else{
+                return -1;
+            }
+        }
+        else{
+            return -1;
+        }
+        
+
+        // next page
+        addr += PGSIZE;
+    }
+
+    // switch to process's address space
+    lcr3(V2P(curproc->pgdir));
+    
+    return 0;
 }
 
 //PAGEBREAK!

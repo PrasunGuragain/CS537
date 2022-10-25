@@ -121,7 +121,8 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
-struct pstat*   iterate_ptable(struct pstat*);
+int             settickets(int ticket);
+int             getpinfo(struct pstat* curr_state);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
@@ -187,6 +188,9 @@ void            switchuvm(struct proc*);
 void            switchkvm(void);
 int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
+int             mprotect(void *addr,int len);
+int             munprotect(void *addr,int len);
+//static pte_t *  walkpgdir(pde_t *pgdir, const void *va, int alloc);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

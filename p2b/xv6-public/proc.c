@@ -14,7 +14,6 @@ struct {
 } ptable;
 
 static struct proc *initproc;
-struct pstat *pstate;
 
 int nextpid = 1;
 extern void forkret(void);
@@ -22,26 +21,60 @@ extern void trapret(void);
 
 static void wakeup1(void *chan);
 
-struct pstat* iterate_ptable(struct pstat* pstate){
-  struct proc *p;
-  int i = 0;
+int
+settickets(int ticket)
+{  
+    if (ticket < 0 || ticket > 1){
+        return -1;
+    }
 
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if (p->state != UNUSED){
-        pstate->inuse[i] = 1;
-      } 
-      else{
-        pstate->inuse[i] = 0;
-      }
+    struct proc* curr_proc = myproc();
 
-      pstate->tickets[i] = p->priority;
-      pstate->pid[i] = p->pid;
-      pstate->ticks[i] = p->run_ticks;
-      i++;
+    acquire(&ptable.lock);
+
+    // first argument from user
+    if(argint(0, &ticket) < 0){
+        return -1;
+    }
+
+    if (ticket == 0){
+        curr_proc -> priority = 0;
+    }
+
+    if (ticket == 1){
+        curr_proc -> priority = 1;
     }
     
-  return pstate;
+    release(&ptable.lock);
+
+    return 0;
 }
+
+int
+getpinfo(struct pstat* curr_state)
+{
+    struct proc *p;
+
+    int i = 0;
+
+        for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+        if (p->state != UNUSED){
+            curr_state->inuse[i] = 1;
+        } 
+        else{
+            curr_state->inuse[i] = 0;
+        }
+
+        curr_state->tickets[i] = p->priority;
+        curr_state->pid[i] = p->pid;
+        curr_state->ticks[i] = p->run_ticks;
+        i++;
+    }
+        
+    return 0;
+}
+
+// for read-only, these files: vm.c, mmu.h, sysfile.c
 
 void
 pinit(void)
@@ -111,6 +144,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->priority = 1;
 
   release(&ptable.lock);
 
@@ -222,6 +256,7 @@ fork(void)
   np->sz = curproc->sz;
   np->parent = curproc;
   *np->tf = *curproc->tf;
+  np->priority = curproc ->priority;
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;

@@ -6,6 +6,64 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "pstat.h"
+
+int sys_mprotect(void){
+    void* addr;
+
+    // pointer to the address
+    if(argptr(0, (void*)&addr,sizeof(*addr)) < 0){
+        return -1;
+    }
+
+    int len;
+    if(argint(1, &len) < 0){
+        return -1;
+    }
+
+    return mprotect(addr,len);
+}
+
+int sys_munprotect(void){
+    void* addr;
+
+    // pointer to the address
+    if(argptr(0, (void*)&addr,sizeof(*addr)) < 0){
+        return -1;
+    }
+
+    int len;
+    if(argint(1, &len) < 0){
+        return -1;
+    }
+    
+    return munprotect(addr,len);
+}
+
+int
+sys_settickets(void)
+{ 
+    int ticket;
+    if(argint(0, &ticket) < 0){
+        return -1;
+    }
+    return settickets(ticket);
+}
+
+int 
+sys_getpinfo(void){
+    struct pstat* curr_state;
+
+    if(argptr(0, (char**)&curr_state,sizeof(*curr_state)) < 0){
+        return -1;
+    }
+
+    if (curr_state == 0){
+        return -1;
+    }
+
+    return getpinfo(curr_state);
+}
 
 int
 sys_fork(void)
